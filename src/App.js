@@ -5,9 +5,14 @@ import React, {useState, useEffect} from 'react';
 function App() {
   const [breakLength, setBreakLength] = useState(5);
   const [sessionLength, setSessionLength] = useState(25);
+  const [time, setTime] = useState(sessionLength * 60);
+  const [timerRunning, setTimerRunning] = useState(false);
 
 
   const handleIncrement = (e) => {
+    if (e === 60) {
+      return;
+    } else {
     switch (e) {
       case 1:
         setBreakLength(breakLength + 1)
@@ -19,19 +24,55 @@ function App() {
         break;
     }
   }
+  }
 
   const handleDecrement = (e) => {
     switch (e) {
       case 1:
+        if (breakLength === 0 || breakLength === 60){
+          return;
+        } else {  
         setBreakLength(breakLength - 1)
         break;
+        }
         case 2:
+          if (sessionLength === 0 || sessionLength === 60) {
+          return;
+          } else {
         setSessionLength(sessionLength - 1)
+        setTime((sessionLength - 1) * 60)
         break;
+          }
         default:
         break;
     }
   }
+  
+
+  useEffect(() => {
+    if (timerRunning && time > 0) {
+      const timer = setInterval(() => {
+        setTime((prevTime) => prevTime - 1);
+      }, 1000);
+
+      return () => {
+        clearInterval(timer);
+      };
+    }
+  }, [time, timerRunning]);
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    const formattedSeconds = remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds;
+    return `${formattedMinutes}:${formattedSeconds}`;
+  }
+
+  const toggleTimer = () => {
+    setTimerRunning(!timerRunning);
+  }
+
 
   return (
  <div >
@@ -49,9 +90,9 @@ function App() {
   </div>
   <div>
     <div id="timer-label">Session</div>
-    <div id="time-left">{}</div>
+    <div id="time-left">{formatTime(time)}</div>
     <div>
-    <button id="start_stop"></button>
+    <button id="start_stop" onClick={toggleTimer}> {timerRunning ? 'Pause' : 'Start'}</button>
     <button id="reset"></button>
     </div>
   </div>
